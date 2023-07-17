@@ -135,21 +135,24 @@ class AddressBook(UserDict):
     def __str__(self):
         return "\n".join(str(record) for record in self.data.values())
     
-    def iterator(self, n=5):
+    def iterator(self, n=None):
         records = list(self.data.values())
-        total_records = len(records)
-        current_index = 0
+        
+        if n is None: 
+            yield records
+        else:   
+            total_records = len(records)
+            current_index = 0
 
         while current_index < total_records:
             yield records[current_index:current_index+n]
             current_index += n
             
-    def show_all(self):
-        iterator = self.iterator()
+    def show_all(self, n=None):
+        iterator = self.iterator(n)
         for chunk in iterator:
             print("\n".join(str(record) for record in chunk))
-            user_input = input("Press Enter to show more or q to quit: ")
-            if user_input.lower() == 'q':
+            if n is None or len(chunk) < n:
                 break
 
 
@@ -223,20 +226,19 @@ def change(name: str, new_phone: str) -> str:
     return f"no {name} in contacts"
 
 @input_error
-def show_all() -> str:
-    ab.show_all()
+def show_all(*args) -> str:
+    if len(args) > 0:
+        n = int(args[0])
+        iterator = ab.iterator(n)
+        for chunk in iterator:
+            for record in chunk:
+                print(record)
+            choice = input("Press Enter to continue or 'q' to quit: ")
+            if choice.lower() == "q":
+                break
+    else:
+        ab.show_all()
     return ""
-
-# @input_error
-# def show_all() -> str:
-#     if len(ab) == 0:
-#         return "no contacts found"
-#     else:
-#         output = ""
-#         for record in ab.values():
-#             output += str(record) + "\n"
-#         return output.strip()
-    
 
 @input_error
 def set_birthday(name: str, birthday: str) -> str:
